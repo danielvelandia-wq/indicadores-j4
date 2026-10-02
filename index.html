@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard Control de Producción MFR MQ — INLOTRANS</title>
+<link href="https://script.google.com/macros/s/AKfycbwJE4J5PpFR5mAGeisVkNVi5BRalpiXhsqA1-Mob4qkp0JwUGbW46g6iQJNUtKAZKZs/exec" rel="stylesheet">
+<style>
+:root{--navy:#0b2a6b;--blue:#1f5fd6;--green:#12a77a;--orange:#f59e0b;--red:#e5384f;--yellow:#eab308;
+--bg:#eef3fb;--card:#fff;--ink:#14213d;--mut:#6b7a99;--line:#e1e8f5}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Nunito Sans',system-ui,sans-serif}
+header{background:linear-gradient(90deg,#0b2a6b,#1747a8);color:#fff;display:flex;align-items:center;gap:20px;padding:14px 28px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:26px;letter-spacing:.5px}.logo small{display:block;font-size:11px;font-weight:600;opacity:.85;letter-spacing:0}
+header h1{font-size:22px;margin:0;flex:1;font-weight:800;border-left:2px solid rgba(255,255,255,.35);padding-left:20px}
+header h1 b{color:#4ade80}
+.clock{text-align:right;font-weight:700;font-size:14px}
+select{font:inherit;padding:6px 10px;border-radius:8px;border:0;font-weight:700;color:var(--navy)}
+main{padding:18px 24px;display:grid;gap:16px;max-width:1500px;margin:auto}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card{background:var(--card);border-radius:16px;padding:18px 20px;box-shadow:0 2px 10px rgba(20,40,90,.07)}
+.kpi{display:flex;align-items:center;gap:14px}
+.ico{width:56px;height:56px;border-radius:14px;display:grid;place-items:center;color:#fff;font-size:26px;flex:none}
+.kpi .l{font-weight:800;font-size:14px}.kpi .v{font-size:38px;font-weight:800;line-height:1.05}.kpi .v small{font-size:14px;margin-left:4px}
+h2{font-size:16px;margin:0 0 12px;font-weight:800}
+.row{display:grid;gap:16px;grid-template-columns:1.5fr 1fr}
+.row2{display:grid;gap:16px;grid-template-columns:1.5fr 1fr}
+.bar{height:16px;background:#dfe8f7;border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:var(--green);border-radius:9px;transition:width .8s}
+.big{font-size:40px;font-weight:800}
+.pill{display:inline-block;padding:4px 14px;border-radius:20px;font-weight:800;font-size:13px}
+.ok{background:#d9f5ea;color:#0c7a58}.mid{background:#fdf1c7;color:#8a6a00}.bad{background:#fde1e5;color:#c0233a}
+.prod{display:grid;grid-template-columns:150px 1fr 70px;gap:12px;align-items:center;margin:11px 0;font-size:14px;font-weight:600}
+.tr{height:9px;background:#e8eefa;border-radius:5px;margin:3px 0;overflow:hidden}.tr i{display:block;height:100%;border-radius:5px}
+table{width:100%;border-collapse:collapse;font-size:14px}th{color:var(--mut);text-align:left;font-weight:700;padding:6px 4px;border-bottom:1px solid var(--line)}td{padding:9px 4px;border-bottom:1px solid var(--line)}
+.gauge{display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center}
+.leg div{display:flex;gap:8px;align-items:center;margin:9px 0;font-size:14px}.dot{width:14px;height:14px;border-radius:50%}
+.av{display:grid;grid-template-columns:130px 1fr 36px;gap:10px;align-items:center;font-size:13px;margin:9px 0;font-weight:600}
+.av .tr i{background:var(--red)}
+.note{font-size:12px;color:var(--mut);margin-top:6px}
+#err{display:none;background:#fde1e5;color:#c0233a;padding:10px 16px;border-radius:10px;font-weight:700}
+@media(max-width:1000px){.kpis{grid-template-columns:repeat(2,1fr)}.row,.row2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">INLOTRANS<small>Logística y Soluciones en Alimentos</small></div>
+  <h1>DASHBOARD CONTROL DE PRODUCCIÓN <b>MFR MQ</b></h1>
+  <label>Semana <select id="sem"></select></label>
+  <div class="clock"><div id="fecha"></div><div id="upd" style="font-weight:400;font-size:12px;opacity:.85"></div></div>
+</header>
+<main>
+  <div id="err"></div>
+  <section class="kpis">
+    <div class="card kpi"><div class="ico" style="background:var(--blue)">▤</div><div><div class="l">PROGRAMADO</div><div class="v" id="kProg">–<small>ANCHETAS</small></div></div></div>
+    <div class="card kpi"><div class="ico" style="background:var(--green)">⚙</div><div><div class="l">FABRICADO</div><div class="v" id="kFab">–<small>ANCHETAS</small></div></div></div>
+    <div class="card kpi"><div class="ico" style="background:var(--orange)">!</div><div><div class="l">FALTANTE</div><div class="v" id="kFal" style="color:var(--orange)">–<small>ANCHETAS</small></div></div></div>
+    <div class="card kpi"><div class="ico" style="background:var(--red)">✎</div><div><div class="l">AVERÍAS</div><div class="v" id="kAve" style="color:var(--red)">–</div></div></div>
+  </section>
+
+  <section class="row">
+    <div class="card">
+      <h2>AVANCE DEL PLAN</h2>
+      <div style="display:flex;gap:40px;margin-bottom:10px"><div><span class="note">Meta</span><div style="font-size:22px;font-weight:800" id="aMeta"></div></div><div><span class="note">Fabricado</span><div style="font-size:22px;font-weight:800" id="aFab"></div></div></div>
+      <div class="bar"><i id="aBar" style="width:0"></i></div>
+      <div style="display:flex;align-items:center;gap:20px;margin-top:12px"><span class="big" id="aPct"></span><span class="pill" id="aEst"></span></div>
+    </div>
+    <div class="card">
+      <h2>CUMPLIMIENTO GENERAL</h2>
+      <div class="gauge">
+        <svg viewBox="0 0 200 120" width="260" id="gauge"></svg>
+        <div class="leg"><div><span class="dot" style="background:var(--green)"></span>≥ 90% Excelente</div><div><span class="dot" style="background:var(--yellow)"></span>70% – 89% Aceptable</div><div><span class="dot" style="background:var(--red)"></span>&lt; 70% Crítico</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="row2">
+    <div class="card"><h2>CUMPLIMIENTO POR ANCHETA</h2><div id="porProd"></div></div>
+    <div class="card"><h2>TOP ANCHETAS MÁS ATRASADAS</h2>
+      <table><thead><tr><th>#</th><th>Ancheta</th><th>Cumpl.</th><th>Falta</th><th>Estado</th></tr></thead><tbody id="top"></tbody></table></div>
+  </section>
+
+  <section class="row2">
+    <div class="card"><h2>AVERÍAS POR PRODUCTO (TOP 5)</h2><div id="avProd"></div><div class="note">La hoja de averías no trae semana: el total es el acumulado.</div></div>
+    <div class="card"><h2>AVERÍAS POR RESPONSABLE</h2><div id="avResp"></div></div>
+  </section>
+</main>
+
+<script>
+/* ===== CONFIGURACIÓN ===== */
+// Pega aquí la URL de tu Web App (termina en /exec). Si está vacía se usan datos de ejemplo del Excel.
+const API_URL = 'https://script.google.com/macros/s/AKfycbwJE4J5PpFR5mAGeisVkNVi5BRalpiXhsqA1-Mob4qkp0JwUGbW46g6iQJNUtKAZKZs/exec';
+const REFRESCO_MS = 60000;
+const DEMO = {"ok": true, "actualizado": "2026-10-02T17:11:14.718042", "plan": [{"SemanaNumero": 1, "Semana": "SEMANA 1", "Ancheta": "Ancheta Ilusión 2026 Sin vino", "Plan": 6000, "Fabricacion": 6019, "Atraso": -19, "CumplimientoPct": 1.0032}, {"SemanaNumero": 1, "Semana": "SEMANA 1", "Ancheta": "Ancheta Armonía 2026 Sin vino", "Plan": 6000, "Fabricacion": 6000, "Atraso": 0, "CumplimientoPct": 1.0}, {"SemanaNumero": 1, "Semana": "SEMANA 1", "Ancheta": "Mercado Basico Alkosto", "Plan": 6000, "Fabricacion": 6000, "Atraso": 0, "CumplimientoPct": 1.0}, {"SemanaNumero": 1, "Semana": "SEMANA 1", "Ancheta": "Anch Compartir 2026 Sin Vino", "Plan": 6000, "Fabricacion": 6000, "Atraso": 0, "CumplimientoPct": 1.0}, {"SemanaNumero": 1, "Semana": "SEMANA 1", "Ancheta": "Anchet Tradición 2026 Sin vino", "Plan": 6000, "Fabricacion": 6072, "Atraso": -72, "CumplimientoPct": 1.012}, {"SemanaNumero": 1, "Semana": "SEMANA 1", "Ancheta": "Anch Felic Fiest 2026 Sin Vino", "Plan": 6000, "Fabricacion": 6000, "Atraso": 0, "CumplimientoPct": 1.0}, {"SemanaNumero": 2, "Semana": "SEMANA 2", "Ancheta": "Ancheta Ilusión 2026", "Plan": 6000, "Fabricacion": 6000, "Atraso": 0, "CumplimientoPct": 1.0}, {"SemanaNumero": 2, "Semana": "SEMANA 2", "Ancheta": "Ancheta Compartir 2026", "Plan": 6125, "Fabricacion": 6125, "Atraso": 0, "CumplimientoPct": 1.0}, {"SemanaNumero": 2, "Semana": "SEMANA 2", "Ancheta": "Matrim Felicidad 2026 Sin vino", "Plan": 5450, "Fabricacion": 5450, "Atraso": 0, "CumplimientoPct": 1.0}, {"SemanaNumero": 2, "Semana": "SEMANA 2", "Ancheta": "Ancheta Ilusión 2026 Sin vino", "Plan": 550, "Fabricacion": 550, "Atraso": 0, "CumplimientoPct": 1.0}, {"SemanaNumero": 2, "Semana": "SEMANA 2", "Ancheta": "Ancheta Alegría Sin Licor 2026", "Plan": 2675, "Fabricacion": 2675, "Atraso": 0, "CumplimientoPct": 1.0}, {"SemanaNumero": 2, "Semana": "SEMANA 2", "Ancheta": "Ancheta Ilusión 2026 Sin vino", "Plan": 3200, "Fabricacion": 3200, "Atraso": 0, "CumplimientoPct": 1.0}, {"SemanaNumero": 2, "Semana": "SEMANA 2", "Ancheta": "MerNavideñ Alk 2026 Sin Vino", "Plan": 6000, "Fabricacion": 6000, "Atraso": 0, "CumplimientoPct": 1.0}, {"SemanaNumero": 3, "Semana": "SEMANA 3", "Ancheta": "MerNavideñ Alk 2026 Sin Vino", "Plan": 3440, "Fabricacion": 3440, "Atraso": 0, "CumplimientoPct": 1.0}, {"SemanaNumero": 3, "Semana": "SEMANA 3", "Ancheta": "Matrim Navideño  2026 sinvino", "Plan": 3900, "Fabricacion": 3900, "Atraso": 0, "CumplimientoPct": 1.0}, {"SemanaNumero": 3, "Semana": "SEMANA 3", "Ancheta": "Matrimonio Navideño 2026", "Plan": 3500, "Fabricacion": 3500, "Atraso": 0, "CumplimientoPct": 1.0}, {"SemanaNumero": 3, "Semana": "SEMANA 3", "Ancheta": "Ancheta Tradición 2026", "Plan": 6000, "Fabricacion": 6000, "Atraso": 0, "CumplimientoPct": 1.0}, {"SemanaNumero": 3, "Semana": "SEMANA 3", "Ancheta": "Ancheta Armonía 2026", "Plan": 6000, "Fabricacion": 6000, "Atraso": 0, "CumplimientoPct": 1.0}, {"SemanaNumero": 3, "Semana": "SEMANA 3", "Ancheta": "Matrim felicidad 2026", "Plan": 6900, "Fabricacion": 3060, "Atraso": 3840, "CumplimientoPct": 0.4435}, {"SemanaNumero": 3, "Semana": "SEMANA 3", "Ancheta": "Matrimonio Navideño 2026", "Plan": 1100, "Fabricacion": 1100, "Atraso": 0, "CumplimientoPct": 1.0}, {"SemanaNumero": 3, "Semana": "SEMANA 3", "Ancheta": "Anchet Aguinaldo 2026 Sin vino", "Plan": 6000, "Fabricacion": 0, "Atraso": 6000, "CumplimientoPct": 0.0}], "averias": [{"Producto": "ACEITE", "Codigo": "7702161560005", "Ancheta": "MERCADO BASICO", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 1}, {"Producto": "ACEITE", "Codigo": "7702161560005", "Ancheta": "MERCADO BASICO", "Responsable": "PROVEEDOR", "CantidadAveriada": 6}, {"Producto": "ARROZ", "Codigo": "10827", "Ancheta": "MERCADO BASICO", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 6}, {"Producto": "ARROZ", "Codigo": "10827", "Ancheta": "MERCADO BASICO", "Responsable": "PROVEEDOR", "CantidadAveriada": 8}, {"Producto": "ATUN", "Codigo": "M261951", "Ancheta": "ANCHETA TRADICION", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 1}, {"Producto": "AVENA HOJUELAS", "Codigo": "7707335282790", "Ancheta": "MERCADO BASICO", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 2}, {"Producto": "AVENA HOJUELAS", "Codigo": "7707335282790", "Ancheta": "MERCADO BASICO", "Responsable": "PROVEEDOR", "CantidadAveriada": 7}, {"Producto": "AZUCAR", "Codigo": "7702104010406", "Ancheta": "MERCADO BASICO", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 16}, {"Producto": "CRAKEÑAS SALTIN", "Codigo": "7702011209078", "Ancheta": "ANCHETA TRADICION", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 2}, {"Producto": "CRAKEÑAS SALTIN", "Codigo": "7702011209078", "Ancheta": "ANCHETA TRADICION", "Responsable": "PROVEEDOR", "CantidadAveriada": 4}, {"Producto": "CRAKEÑAS SALTIN", "Codigo": "7702011209078", "Ancheta": "MERCADO BASICO", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 12}, {"Producto": "CRAKEÑAS SALTIN", "Codigo": "7702011209078", "Ancheta": "MERCADO BASICO", "Responsable": "PROVEEDOR", "CantidadAveriada": 6}, {"Producto": "FRUTICAS", "Codigo": "7702011136121", "Ancheta": "ANCHETA ARMONÍA", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 1}, {"Producto": "FRUTICAS", "Codigo": "7702011136121", "Ancheta": "ANCHETA ARMONÍA", "Responsable": "PROVEEDOR", "CantidadAveriada": 1}, {"Producto": "FRUTICAS", "Codigo": "7702011136121", "Ancheta": "ANCHETA COMPARTIR", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 6}, {"Producto": "FRUTICAS", "Codigo": "7702011136121", "Ancheta": "ANCHETA TRADICION", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 4}, {"Producto": "FRUTIÑO", "Codigo": "7702354955830", "Ancheta": "MERCADO BASICO", "Responsable": "PROVEEDOR", "CantidadAveriada": 1}, {"Producto": "GALLETA NOEL", "Codigo": "7702025150151", "Ancheta": "ANCHETA ILUSIÓN", "Responsable": "PROVEEDOR", "CantidadAveriada": 1}, {"Producto": "GALLETAS DULCES", "Codigo": "7700149534130", "Ancheta": "ANCHETA TRADICION", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 4}, {"Producto": "GALLETAS DULCES", "Codigo": "7700149534130", "Ancheta": "ANCHETA TRADICION", "Responsable": "PROVEEDOR", "CantidadAveriada": 2}, {"Producto": "GALLETAS MANTEQUILLA", "Codigo": null, "Ancheta": "ANCHETA COMPARTIR", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 1}, {"Producto": "GALLETAS MANTEQUILLA", "Codigo": null, "Ancheta": "ANCHETA COMPARTIR", "Responsable": "PROVEEDOR", "CantidadAveriada": 3}, {"Producto": "GALLETAS NOEL", "Codigo": "7702025150168", "Ancheta": "ANCHETA ARMONÍA", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 1}, {"Producto": "GALLETAS NOEL", "Codigo": "7702025150168", "Ancheta": "ANCHETA ARMONÍA", "Responsable": "PROVEEDOR", "CantidadAveriada": 8}, {"Producto": "GELATINA FRESA", "Codigo": "7700149625593", "Ancheta": "ANCHETA ILUSIÓN", "Responsable": "PROVEEDOR", "CantidadAveriada": 2}, {"Producto": "HARINA PARA AREPA", "Codigo": "7702020211017", "Ancheta": "MERCADO BASICO", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 1}, {"Producto": "HARINA PARA AREPA", "Codigo": "7702020211017", "Ancheta": "MERCADO BASICO", "Responsable": "PROVEEDOR", "CantidadAveriada": 10}, {"Producto": "LENTEJAS", "Codigo": "7707335281496", "Ancheta": "MERCADO BASICO", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 5}, {"Producto": "LENTEJAS", "Codigo": "7707335281496", "Ancheta": "MERCADO BASICO", "Responsable": "PROVEEDOR", "CantidadAveriada": 2}, {"Producto": "MAIZ PIRA", "Codigo": "7707335281908", "Ancheta": "MERCADO BASICO", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 4}, {"Producto": "MAIZ TIERNO", "Codigo": "7700149521079", "Ancheta": "ANCHETA COMPARTIR", "Responsable": "PROVEEDOR", "CantidadAveriada": 2}, {"Producto": "MANI", "Codigo": "7702409005305", "Ancheta": "ANCHETA ILUSIÓN", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 1}, {"Producto": "MASMELO AMERICANO", "Codigo": "7702993048825", "Ancheta": "ANCHETA COMPARTIR", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 1}, {"Producto": "MASMELO AMERICANO", "Codigo": "7702993048825", "Ancheta": "ANCHETA COMPARTIR", "Responsable": "PROVEEDOR", "CantidadAveriada": 2}, {"Producto": "MASMELOS", "Codigo": "7702011034717", "Ancheta": "ANCHETA ILUSIÓN", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 2}, {"Producto": "MASMELOS", "Codigo": "7702011034717", "Ancheta": "ANCHETA ILUSIÓN", "Responsable": "PROVEEDOR", "CantidadAveriada": 2}, {"Producto": "MERMELADA DE MORA", "Codigo": "7702097036643", "Ancheta": "ANCHETA COMPARTIR", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 13}, {"Producto": "MERMELADA DE MORA", "Codigo": "7702097036643", "Ancheta": "ANCHETA COMPARTIR", "Responsable": "PROVEEDOR", "CantidadAveriada": 5}, {"Producto": "NAPOLITANA", "Codigo": "77020977086259", "Ancheta": "ANCHETA ARMONÍA", "Responsable": "PROVEEDOR", "CantidadAveriada": 4}, {"Producto": "NAPOLITANA", "Codigo": "7702097155641", "Ancheta": "ANCHETA COMPARTIR", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 34}, {"Producto": "NAPOLITANA", "Codigo": "7702097155641", "Ancheta": "ANCHETA COMPARTIR", "Responsable": "PROVEEDOR", "CantidadAveriada": 1}, {"Producto": "NATILLA", "Codigo": "7709855213889", "Ancheta": "ANCHETA ILUSIÓN", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 2}, {"Producto": "NATILLA", "Codigo": "7709855213889", "Ancheta": "ANCHETA ILUSIÓN", "Responsable": "PROVEEDOR", "CantidadAveriada": 4}, {"Producto": "NATILLA AREQUIPE", "Codigo": "7709855213827", "Ancheta": "ANCHETA ARMONÍA", "Responsable": "PROVEEDOR", "CantidadAveriada": 41}, {"Producto": "NATILLA AREQUIPE", "Codigo": "7700149362733", "Ancheta": "ANCHETA FELICES FIESTAS", "Responsable": "PROVEEDOR", "CantidadAveriada": 4}, {"Producto": "NATILLA AREQUIPE", "Codigo": "7700149362733", "Ancheta": "ANCHETA TRADICION", "Responsable": "PROVEEDOR", "CantidadAveriada": 4}, {"Producto": "PANCAKES", "Codigo": "7708308659762", "Ancheta": "ANCHETA COMPARTIR", "Responsable": "PROVEEDOR", "CantidadAveriada": 8}, {"Producto": "PANCAKES", "Codigo": "7708308659762", "Ancheta": "ANCHETA FELICES FIESTAS", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 2}, {"Producto": "PANCAKES", "Codigo": "7708308659762", "Ancheta": "ANCHETA FELICES FIESTAS", "Responsable": "PROVEEDOR", "CantidadAveriada": 1}, {"Producto": "PASTA", "Codigo": "77059466317238", "Ancheta": "ANCHETA ARMONÍA", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 20}, {"Producto": "PENNE RIGATE", "Codigo": "8076802085738", "Ancheta": "ANCHETA COMPARTIR", "Responsable": "PROVEEDOR", "CantidadAveriada": 4}, {"Producto": "RALLADO DE ATUN", "Codigo": "M261961", "Ancheta": "ANCHETA ARMONÍA", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 1}, {"Producto": "RALLADO DE ATUN", "Codigo": "M261961", "Ancheta": "ANCHETA ARMONÍA", "Responsable": "PROVEEDOR", "CantidadAveriada": 3}, {"Producto": "SAL", "Codigo": "7703812101103", "Ancheta": "MERCADO BASICO", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 8}, {"Producto": "SAL", "Codigo": "7703812101103", "Ancheta": "MERCADO BASICO", "Responsable": "PROVEEDOR", "CantidadAveriada": 1}, {"Producto": "SALTIN 3 TACOS", "Codigo": "7702024245810", "Ancheta": "ANCHETA ARMONÍA", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 4}, {"Producto": "SALTIN 3 TACOS", "Codigo": "7702024245810", "Ancheta": "ANCHETA ARMONÍA", "Responsable": "PROVEEDOR", "CantidadAveriada": 1}, {"Producto": "SPAGHETTI", "Codigo": "7702020040006", "Ancheta": "MERCADO BASICO", "Responsable": "PRODUCCIÓN", "CantidadAveriada": 1}, {"Producto": "SPAGHETTI", "Codigo": "7702020040006", "Ancheta": "MERCADO BASICO", "Responsable": "PROVEEDOR", "CantidadAveriada": 2}, {"Producto": "SYRUP MAPLE", "Codigo": "7709311629551", "Ancheta": "ANCHETA COMPARTIR", "Responsable": "PROVEEDOR", "CantidadAveriada": 1}, {"Producto": "TACO SALTINAS", "Codigo": "7702024944805", "Ancheta": "ANCHETA ILUSIÓN", "Responsable": "PROVEEDOR", "CantidadAveriada": 1}]};
+
+/* ===== UTILIDADES ===== */
+const $ = id => document.getElementById(id);
+const fmt = n => Number(n).toLocaleString('es-CO');
+const pct = n => (n * 100).toFixed(1).replace('.', ',') + '%';
+const estado = p => p >= .9 ? ['ok','Excelente','#12a77a'] : p >= .7 ? ['mid','Aceptable','#eab308'] : ['bad','Crítico','#e5384f'];
+const norm = s => String(s || '').trim().replace(/\s+/g,' ');
+let DATA = null;
+
+async function cargar(){
+  try{
+    if(API_URL){ const r = await fetch(API_URL); DATA = await r.json(); if(!DATA.ok) throw new Error(DATA.error); }
+    else DATA = DEMO;
+    $('err').style.display='none';
+    $('upd').textContent = 'Actualizado ' + new Date(DATA.actualizado || Date.now()).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+    llenarSemanas(); pintar();
+  }catch(e){ $('err').style.display='block'; $('err').textContent='No se pudieron cargar los datos: ' + e.message; }
+}
+function llenarSemanas(){
+  const sel = $('sem'), actual = sel.value;
+  const sems = [...new Set(DATA.plan.map(r => r.Semana))];
+  sel.innerHTML = '<option value="">Todas</option>' + sems.map(s => `<option>${s}</option>`).join('');
+  sel.value = sems.includes(actual) ? actual : sems[sems.length-1];
+}
+function pintar(){
+  const sem = $('sem').value;
+  const filas = DATA.plan.filter(r => !sem || r.Semana === sem);
+  const prog = filas.reduce((a,r)=>a+Number(r.Plan||0),0), fab = filas.reduce((a,r)=>a+Number(r.Fabricacion||0),0);
+  const falt = Math.max(0, prog - fab), cump = prog ? fab/prog : 0, [cls,txt,col] = estado(cump);
+  $('kProg').firstChild.textContent = fmt(prog); $('kFab').firstChild.textContent = fmt(fab); $('kFal').firstChild.textContent = fmt(falt);
+  const ave = DATA.averias.reduce((a,r)=>a+Number(r.CantidadAveriada||0),0); $('kAve').textContent = fmt(ave);
+  $('aMeta').textContent = fmt(prog)+' anchetas'; $('aFab').textContent = fmt(fab)+' anchetas';
+  $('aBar').style.width = Math.min(100,cump*100)+'%'; $('aBar').style.background = col;
+  $('aPct').textContent = pct(cump); $('aEst').className='pill '+cls; $('aEst').textContent = cump>=.9?'AL DÍA':cump>=.7?'EN RIESGO':'ATRASADO';
+  gauge(cump);
+
+  // agrupar por ancheta
+  const g = {}; filas.forEach(r => { const k = norm(r.Ancheta); g[k] = g[k]||{n:k,p:0,f:0}; g[k].p += Number(r.Plan||0); g[k].f += Number(r.Fabricacion||0); });
+  const L = Object.values(g).map(x => ({...x, c: x.p ? x.f/x.p : 0}));
+  const max = Math.max(1,...L.map(x=>x.p));
+  $('porProd').innerHTML = L.map(x => { const [c,,col]=estado(x.c); return `<div class="prod"><span>${x.n}</span><div>
+    <div class="tr"><i style="width:${x.p/max*100}%;background:var(--blue)"></i></div><div class="tr"><i style="width:${x.f/max*100}%;background:${col}"></i></div></div>
+    <span class="pill ${c}">${pct(x.c)}</span></div>`; }).join('') || '<div class="note">Sin datos.</div>';
+  $('top').innerHTML = [...L].sort((a,b)=>a.c-b.c).slice(0,5).map((x,i)=>{ const [c,t]=estado(x.c);
+    return `<tr><td>${i+1}</td><td>${x.n}</td><td>${pct(x.c)}</td><td>${fmt(Math.max(0,x.p-x.f))}</td><td><span class="pill ${c}">${t}</span></td></tr>`; }).join('');
+
+  barras('avProd', agrupar(DATA.averias,'Producto').slice(0,5));
+  barras('avResp', agrupar(DATA.averias,'Responsable'));
+}
+function agrupar(arr,campo){ const m={}; arr.forEach(r=>{const k=norm(r[campo]); m[k]=(m[k]||0)+Number(r.CantidadAveriada||0);}); return Object.entries(m).sort((a,b)=>b[1]-a[1]); }
+function barras(id,l){ const mx=Math.max(1,...l.map(x=>x[1])); $(id).innerHTML=l.map(x=>`<div class="av"><span>${x[0]}</span><div class="tr"><i style="width:${x[1]/mx*100}%"></i></div><span>${x[1]}</span></div>`).join(''); }
+function gauge(p){
+  const pt=(v,r)=>{const a=Math.PI*(1-v);return [100+r*Math.cos(a),100-r*Math.sin(a)]};
+  const arc=(a,b,c)=>{const [x1,y1]=pt(a,80),[x2,y2]=pt(b,80);return `<path d="M${x1} ${y1} A80 80 0 0 1 ${x2} ${y2}" stroke="${c}" stroke-width="16" fill="none"/>`};
+  const [nx,ny]=pt(Math.min(1,p),62);
+  $('gauge').innerHTML = arc(0,.7,'#e5384f')+arc(.7,.9,'#eab308')+arc(.9,1,'#12a77a')+
+   `<line x1="100" y1="100" x2="${nx}" y2="${ny}" stroke="#0b2a6b" stroke-width="4" stroke-linecap="round"/><circle cx="100" cy="100" r="6" fill="#0b2a6b"/>
+    <text x="100" y="88" text-anchor="middle" font-size="22" font-weight="800" fill="#14213d">${pct(p)}</text>
+    <text x="14" y="116" font-size="9" fill="#6b7a99">0%</text><text x="186" y="116" font-size="9" text-anchor="end" fill="#6b7a99">100%</text>`;
+}
+function reloj(){ $('fecha').textContent = new Date().toLocaleString('es-CO',{weekday:'short',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+$('sem').addEventListener('change', pintar);
+reloj(); setInterval(reloj,1000); cargar(); setInterval(cargar,REFRESCO_MS);
+</script>
+</body>
+</html>
