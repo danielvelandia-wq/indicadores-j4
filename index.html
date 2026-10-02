@@ -7,7 +7,11 @@
 <link href="https://script.google.com/macros/s/AKfycbwJE4J5PpFR5mAGeisVkNVi5BRalpiXhsqA1-Mob4qkp0JwUGbW46g6iQJNUtKAZKZs/exec" rel="stylesheet">
 <style>
 :root{--navy:#0b2a6b;--blue:#1f5fd6;--green:#12a77a;--orange:#f59e0b;--red:#e5384f;--yellow:#eab308;
---bg:#eef3fb;--card:#fff;--ink:#14213d;--mut:#6b7a99;--line:#e1e8f5}
+--bg:#eef3fb;--card:#fff;--ink:#14213d;--mut:#6b7a99;--line:#e1e8f5;--track:#e8eefa;
+--ok-bg:#d9f5ea;--ok-ink:#0c7a58;--mid-bg:#fdf1c7;--mid-ink:#8a6a00;--bad-bg:#fde1e5;--bad-ink:#c0233a}
+body[data-theme="dark"]{color-scheme:dark;--navy:#8bb5ff;--blue:#6fa2ff;--green:#41d6a3;--orange:#ffbd59;--red:#ff7181;--yellow:#f4cd52;
+--bg:#111923;--card:#1b2733;--ink:#e7edf5;--mut:#a6b4c4;--line:#344454;--track:#30404f;
+--ok-bg:#173d34;--ok-ink:#76e0b6;--mid-bg:#44391f;--mid-ink:#f2d36b;--bad-bg:#482a33;--bad-ink:#ff9aa5}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Nunito Sans',system-ui,sans-serif}
 header{background:linear-gradient(90deg,#0b2a6b,#1747a8);color:#fff;display:flex;align-items:center;gap:20px;padding:14px 28px;flex-wrap:wrap}
@@ -15,6 +19,8 @@ header{background:linear-gradient(90deg,#0b2a6b,#1747a8);color:#fff;display:flex
 header h1{font-size:22px;margin:0;flex:1;font-weight:800;border-left:2px solid rgba(255,255,255,.35);padding-left:20px}
 header h1 b{color:#4ade80}
 .clock{text-align:right;font-weight:700;font-size:14px}
+.theme-toggle{font:inherit;font-size:13px;font-weight:700;color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.35);border-radius:8px;padding:8px 12px;cursor:pointer}
+.theme-toggle:hover{background:rgba(255,255,255,.22)}.theme-toggle:focus-visible{outline:3px solid #4ade80;outline-offset:2px}
 select{font:inherit;padding:6px 10px;border-radius:8px;border:0;font-weight:700;color:var(--navy)}
 main{padding:18px 24px;display:grid;gap:16px;max-width:1500px;margin:auto}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
@@ -25,19 +31,19 @@ main{padding:18px 24px;display:grid;gap:16px;max-width:1500px;margin:auto}
 h2{font-size:16px;margin:0 0 12px;font-weight:800}
 .row{display:grid;gap:16px;grid-template-columns:1.5fr 1fr}
 .row2{display:grid;gap:16px;grid-template-columns:1.5fr 1fr}
-.bar{height:16px;background:#dfe8f7;border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:var(--green);border-radius:9px;transition:width .8s}
+.bar{height:16px;background:var(--track);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:var(--green);border-radius:9px;transition:width .8s}
 .big{font-size:40px;font-weight:800}
 .pill{display:inline-block;padding:4px 14px;border-radius:20px;font-weight:800;font-size:13px}
-.ok{background:#d9f5ea;color:#0c7a58}.mid{background:#fdf1c7;color:#8a6a00}.bad{background:#fde1e5;color:#c0233a}
+.ok{background:var(--ok-bg);color:var(--ok-ink)}.mid{background:var(--mid-bg);color:var(--mid-ink)}.bad{background:var(--bad-bg);color:var(--bad-ink)}
 .prod{display:grid;grid-template-columns:150px 1fr 70px;gap:12px;align-items:center;margin:11px 0;font-size:14px;font-weight:600}
-.tr{height:9px;background:#e8eefa;border-radius:5px;margin:3px 0;overflow:hidden}.tr i{display:block;height:100%;border-radius:5px}
+.tr{height:9px;background:var(--track);border-radius:5px;margin:3px 0;overflow:hidden}.tr i{display:block;height:100%;border-radius:5px}
 table{width:100%;border-collapse:collapse;font-size:14px}th{color:var(--mut);text-align:left;font-weight:700;padding:6px 4px;border-bottom:1px solid var(--line)}td{padding:9px 4px;border-bottom:1px solid var(--line)}
 .gauge{display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center}
 .leg div{display:flex;gap:8px;align-items:center;margin:9px 0;font-size:14px}.dot{width:14px;height:14px;border-radius:50%}
 .av{display:grid;grid-template-columns:130px 1fr 36px;gap:10px;align-items:center;font-size:13px;margin:9px 0;font-weight:600}
 .av .tr i{background:var(--red)}
 .note{font-size:12px;color:var(--mut);margin-top:6px}
-#err{display:none;background:#fde1e5;color:#c0233a;padding:10px 16px;border-radius:10px;font-weight:700}
+#err{display:none;background:var(--bad-bg);color:var(--bad-ink);padding:10px 16px;border-radius:10px;font-weight:700}
 @media(max-width:1000px){.kpis{grid-template-columns:repeat(2,1fr)}.row,.row2{grid-template-columns:1fr}}
 </style>
 </head>
@@ -46,6 +52,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th{color:var(--mut);tex
   <div class="logo">INLOTRANS<small>Logística y Soluciones en Alimentos</small></div>
   <h1>DASHBOARD CONTROL DE PRODUCCIÓN <b>BODEGA J4</b></h1>
   <label>Semana <select id="sem"></select></label>
+  <button class="theme-toggle" id="themeToggle" type="button" aria-label="Cambiar a modo oscuro" aria-pressed="false">☾ <span>Modo oscuro</span></button>
   <div class="clock"><div id="fecha"></div><div id="upd" style="font-weight:400;font-size:12px;opacity:.85"></div></div>
 </header>
 <main>
@@ -96,7 +103,7 @@ const DEMO = {"ok": true, "actualizado": "2026-10-02T17:11:14.718042", "plan": [
 const $ = id => document.getElementById(id);
 const fmt = n => Number(n).toLocaleString('es-CO');
 const pct = n => (n * 100).toFixed(1).replace('.', ',') + '%';
-const estado = p => p >= .9 ? ['ok','Excelente','#12a77a'] : p >= .7 ? ['mid','Aceptable','#eab308'] : ['bad','Crítico','#e5384f'];
+const estado = p => p >= .9 ? ['ok','Excelente','var(--green)'] : p >= .7 ? ['mid','Aceptable','var(--yellow)'] : ['bad','Crítico','var(--red)'];
 const norm = s => String(s || '').trim().replace(/\s+/g,' ');
 let DATA = null;
 
@@ -146,11 +153,23 @@ function gauge(p){
   const pt=(v,r)=>{const a=Math.PI*(1-v);return [100+r*Math.cos(a),100-r*Math.sin(a)]};
   const arc=(a,b,c)=>{const [x1,y1]=pt(a,80),[x2,y2]=pt(b,80);return `<path d="M${x1} ${y1} A80 80 0 0 1 ${x2} ${y2}" stroke="${c}" stroke-width="16" fill="none"/>`};
   const [nx,ny]=pt(Math.min(1,p),62);
-  $('gauge').innerHTML = arc(0,.7,'#e5384f')+arc(.7,.9,'#eab308')+arc(.9,1,'#12a77a')+
-   `<line x1="100" y1="100" x2="${nx}" y2="${ny}" stroke="#0b2a6b" stroke-width="4" stroke-linecap="round"/><circle cx="100" cy="100" r="6" fill="#0b2a6b"/>
-    <text x="100" y="88" text-anchor="middle" font-size="22" font-weight="800" fill="#14213d">${pct(p)}</text>
-    <text x="14" y="116" font-size="9" fill="#6b7a99">0%</text><text x="186" y="116" font-size="9" text-anchor="end" fill="#6b7a99">100%</text>`;
+  $('gauge').innerHTML = arc(0,.7,'var(--red)')+arc(.7,.9,'var(--yellow)')+arc(.9,1,'var(--green)')+
+   `<line x1="100" y1="100" x2="${nx}" y2="${ny}" stroke="var(--navy)" stroke-width="4" stroke-linecap="round"/><circle cx="100" cy="100" r="6" fill="var(--navy)"/>
+    <text x="100" y="88" text-anchor="middle" font-size="22" font-weight="800" fill="var(--ink)">${pct(p)}</text>
+    <text x="14" y="116" font-size="9" fill="var(--mut)">0%</text><text x="186" y="116" font-size="9" text-anchor="end" fill="var(--mut)">100%</text>`;
 }
+function aplicarTema(tema, guardar=false){
+  const oscuro = tema === 'dark', boton = $('themeToggle');
+  document.body.dataset.theme = oscuro ? 'dark' : 'light';
+  boton.setAttribute('aria-pressed', String(oscuro));
+  boton.setAttribute('aria-label', oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+  boton.querySelector('span').textContent = oscuro ? 'Modo claro' : 'Modo oscuro';
+  if(guardar){ try{ localStorage.setItem('inlotrans-theme', tema); }catch(e){} }
+}
+let temaGuardado = null;
+try{ temaGuardado = localStorage.getItem('inlotrans-theme'); }catch(e){}
+aplicarTema(temaGuardado || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+$('themeToggle').addEventListener('click', () => aplicarTema(document.body.dataset.theme === 'dark' ? 'light' : 'dark', true));
 function reloj(){ $('fecha').textContent = new Date().toLocaleString('es-CO',{weekday:'short',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
 $('sem').addEventListener('change', pintar);
 reloj(); setInterval(reloj,1000); cargar(); setInterval(cargar,REFRESCO_MS);
